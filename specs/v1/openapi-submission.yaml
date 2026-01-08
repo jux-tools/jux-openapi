@@ -1,0 +1,388 @@
+openapi: 3.0.0
+info:
+  title: Jux Submission API
+  version: 1.0.0
+  description: |
+    JUnit XML test result submission API for Jux platform.
+
+    This API enables Test Runner Plugins (pytest-jux, junit-jux, jest-jux)
+    to submit test results to Jux servers.
+
+    **Workstation Submission**: Submit to localhost:4000 (no authentication)
+    **Team CI/CD Submission**: Submit to team server (API key required)
+
+    ## Authentication
+
+    - **Local workstation (jux or jux_team)**: No authentication required
+    - **Team server (jux_team_server)**: Bearer token required in Authorization header
+
+    ## Rate Limits
+
+    - **Local workstation**: No limits
+    - **Team server**: 100 submissions per minute per API key
+
+    ## Versioning
+
+    This API follows semantic versioning. Breaking changes will only occur
+    in major version updates (v2, v3, etc.). Minor and patch versions maintain
+    backward compatibility.
+
+  contact:
+    name: Jux API Support
+    url: https://github.com/jrjsmrtn/jux
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local workstation (jux or jux_team)
+  - url: https://team-jux.company.com/api/v1
+    description: Team server (jux_team_server)
+
+paths:
+  /junit/submit:
+    post:
+      summary: Submit JUnit XML test results
+      description: |
+        Submit JUnit XML test results directly as XML document.
+
+        **Authentication**:
+        - Localhost submission: No authentication required
+        - Team server submission: Bearer token in Authorization header
+
+        **Request Body**:
+        - Complete JUnit XML document with embedded metadata in `<property>` tags
+        - All metadata (project, git, CI, environment) embedded in XML properties
+        - Optional XMLDsig signature in `<testsuites>` element for verification
+
+        **Metadata Extraction**:
+        Jux automatically extracts TestRun-level metadata from first testsuite properties:
+        - `project` (no prefix) → required, auto-detected from git remote if missing
+        - `git:branch` → extracted to test_runs.branch
+        - `git:commit` → extracted to test_runs.commit_sha
+        - All properties preserved in test_suites.properties with prefixes intact
+
+        **Response**:
+        - `201 Created`: Test results submitted successfully
+        - `400 Bad Request`: Invalid XML or missing required metadata
+        - `401 Unauthorized`: Authentication required (team server only)
+        - `403 Forbidden`: Invalid or expired API key
+        - `429 Too Many Requests`: Rate limit exceeded
+
+      operationId: submitJunitXml
+      tags:
+        - Test Submission
+
+      security:
+        - BearerAuth: []
+        - {}  # Allow unauthenticated for localhost
+
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema:
+              type: string
+              description: Complete JUnit XML document with embedded metadata in properties
+              example: |
+                <?xml version="1.0"?>
+                <testsuites>
+                  <testsuite name="Tests" tests="10" failures="2">
+                    <properties>
+                      <property name="project" value="my-application"/>
+                      <property name="git:branch" value="main"/>
+                      <property name="git:commit" value="abc123def456"/>
+                      <property name="jux:pytest_jux_version" value="0.3.0"/>
+                    </properties>
+                    <testcase classname="TestClass" name="test_example" time="0.1"/>
+                  </testsuite>
+                </testsuites>
+            examples:
+              pytest_jux_workstation:
+                summary: pytest-jux workstation submission (local development)
+                value: |
+                  <?xml version="1.0"?>
+                  <testsuites>
+                    <testsuite name="Tests" tests="10" failures="2">
+                      <properties>
+                        <property name="project" value="my-application"/>
+                        <property name="git:branch" value="feature/new-login"/>
+                        <property name="git:commit" value="abc123def456"/>
+                        <property name="git:status" value="dirty"/>
+                        <property name="jux:hostname" value="dev-machine.local"/>
+                        <property name="jux:username" value="developer"/>
+                        <property name="jux:platform" value="Darwin-24.6.0"/>
+                        <property name="jux:python_version" value="3.11.5"/>
+                        <property name="jux:pytest_version" value="8.4.2"/>
+                        <property name="jux:pytest_jux_version" value="0.3.0"/>
+                        <property name="jux:timestamp" value="2025-01-23T10:30:00Z"/>
+                      </properties>
+                      <testcase classname="MathTest" name="test_addition" time="0.1"/>
+                    </testsuite>
+                  </testsuites>
+              pytest_jux_cicd:
+                summary: pytest-jux CI/CD submission (GitHub Actions)
+                value: |
+                  <?xml version="1.0"?>
+                  <testsuites>
+                    <testsuite name="Tests" tests="50" failures="0">
+                      <properties>
+                        <property name="project" value="my-application"/>
+                        <property name="git:branch" value="main"/>
+                        <property name="git:commit" value="def456abc789"/>
+                        <property name="git:status" value="clean"/>
+                        <property name="git:remote" value="https://github.com/org/repo.git"/>
+                        <property name="ci:provider" value="github"/>
+                        <property name="ci:build_id" value="12345"/>
+                        <property name="ci:build_url" value="https://github.com/org/repo/actions/runs/12345"/>
+                        <property name="env:GITHUB_SHA" value="def456abc789"/>
+                        <property name="env:GITHUB_REF" value="refs/heads/main"/>
+                        <property name="env:GITHUB_ACTOR" value="bot"/>
+                        <property name="jux:hostname" value="runner-ubuntu-latest"/>
+                        <property name="jux:username" value="github-runner"/>
+                        <property name="jux:platform" value="Linux-5.15.0"/>
+                        <property name="jux:pytest_jux_version" value="0.3.0"/>
+                      </properties>
+                      <testcase classname="IntegrationTest" name="test_api" time="0.5"/>
+                    </testsuite>
+                  </testsuites>
+              with_xmldsig:
+                summary: Signed JUnit XML with XMLDsig signature
+                value: |
+                  <?xml version="1.0"?>
+                  <testsuites>
+                    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+                      <SignedInfo>
+                        <CanonicalizationMethod Algorithm="http://www.w3.org/2006/12/xml-c14n11"/>
+                        <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+                        <Reference URI="">
+                          <Transforms>
+                            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                          </Transforms>
+                          <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+                          <DigestValue>base64-digest-value</DigestValue>
+                        </Reference>
+                      </SignedInfo>
+                      <SignatureValue>base64-signature-value</SignatureValue>
+                      <KeyInfo>
+                        <X509Data>
+                          <X509Certificate>base64-certificate</X509Certificate>
+                        </X509Data>
+                      </KeyInfo>
+                    </Signature>
+                    <testsuite name="Tests" tests="10">
+                      <properties>
+                        <property name="project" value="my-application"/>
+                        <property name="git:branch" value="main"/>
+                      </properties>
+                      <testcase classname="TestClass" name="test1" time="0.1"/>
+                    </testsuite>
+                  </testsuites>
+
+      responses:
+        '201':
+          description: Test results submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitResponse'
+              examples:
+                successful_submission:
+                  value:
+                    test_run_id: "550e8400-e29b-41d4-a716-446655440000"
+                    message: "Test results submitted successfully"
+                    test_count: 10
+                    failure_count: 2
+                    error_count: 1
+                    skipped_count: 0
+                    success_rate: 70.0
+
+        '400':
+          description: Invalid request (malformed XML or missing required fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_xml:
+                  value:
+                    error: "Invalid JUnit XML"
+                    details:
+                      message: "XML parsing failed: unexpected end of file"
+                      line: 15
+                      column: 5
+                    suggestions:
+                      - "Ensure XML is well-formed with proper closing tags"
+                      - "Validate XML against JUnit XML schema"
+                      - "Check for special characters that need escaping"
+                missing_metadata:
+                  value:
+                    error: "Missing required metadata"
+                    details:
+                      message: "Project name is required but not found in XML properties"
+                      missing_property: "project"
+                    suggestions:
+                      - "Add <property name=\"project\" value=\"your-project-name\"/> to testsuite properties"
+                      - "Ensure pytest-jux auto-detection is working (checks git remote, pyproject.toml, directory name)"
+
+        '401':
+          description: Authentication required (team server submission)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missing_auth:
+                  value:
+                    error: "Authentication required"
+                    details:
+                      message: "Authorization header is required for team server submissions"
+                    suggestions:
+                      - "Include 'Authorization: Bearer <api_key>' header"
+                      - "Generate API key from team server admin interface"
+
+        '403':
+          description: Invalid or expired API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_key:
+                  value:
+                    error: "Invalid API key"
+                    details:
+                      message: "API key is invalid or has been revoked"
+                    suggestions:
+                      - "Verify API key is correct"
+                      - "Generate new API key if current key has been rotated"
+                      - "Contact system administrator for API key issues"
+
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retry
+              example: 60
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Maximum requests per window
+              example: 100
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Remaining requests in current window
+              example: 0
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+              description: Unix timestamp when rate limit resets
+              example: 1678901234
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                rate_limit_exceeded:
+                  value:
+                    error: "Rate limit exceeded"
+                    details:
+                      message: "Maximum of 100 submissions per minute exceeded"
+                      retry_after: 60
+                    suggestions:
+                      - "Wait 60 seconds before retrying"
+                      - "Implement exponential backoff in your client"
+                      - "Contact administrator to increase rate limits if needed"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        API key for team server authentication. Generate API keys from the
+        team server admin interface. Include the key in the Authorization header:
+
+        ```
+        Authorization: Bearer <your-api-key>
+        ```
+
+        **Security Best Practices**:
+        - Store API keys in CI/CD secrets, never in source code
+        - Rotate API keys regularly (every 90 days recommended)
+        - Use separate API keys for different CI/CD pipelines
+        - Revoke compromised keys immediately
+
+  schemas:
+    SubmitResponse:
+      type: object
+      required:
+        - test_run_id
+        - message
+        - test_count
+        - failure_count
+        - error_count
+        - skipped_count
+      properties:
+        test_run_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the submitted test run
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message:
+          type: string
+          description: Human-readable success message
+          example: "Test results submitted successfully"
+        test_count:
+          type: integer
+          description: Total number of tests in the run
+          example: 10
+          minimum: 0
+        failure_count:
+          type: integer
+          description: Number of failed tests
+          example: 2
+          minimum: 0
+        error_count:
+          type: integer
+          description: Number of tests with errors
+          example: 1
+          minimum: 0
+        skipped_count:
+          type: integer
+          description: Number of skipped tests
+          example: 0
+          minimum: 0
+        success_rate:
+          type: number
+          format: float
+          description: Success rate percentage (0-100)
+          example: 70.0
+          minimum: 0
+          maximum: 100
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error type or category
+          example: "Invalid JUnit XML"
+        details:
+          type: object
+          description: Additional error details (structure varies by error type)
+          additionalProperties: true
+        suggestions:
+          type: array
+          description: Actionable suggestions for resolving the error
+          items:
+            type: string
+          example:
+            - "Ensure XML is well-formed with proper closing tags"
+            - "Validate XML against JUnit XML schema"

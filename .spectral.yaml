@@ -1,0 +1,48 @@
+# Spectral OpenAPI linting configuration
+# https://meta.stoplight.io/docs/spectral/
+
+extends:
+  - spectral:oas
+
+rules:
+  # Require operation descriptions
+  operation-description: warn
+
+  # Require operation IDs
+  operation-operationId: error
+
+  # Require tags on operations
+  operation-tags: warn
+
+  # Info section requirements
+  info-contact: warn
+  info-description: error
+  info-license: warn
+
+  # Consistent parameter names
+  path-params: error
+
+  # Security requirements
+  oas3-operation-security-defined: warn
+
+  # Schema best practices
+  oas3-schema: error
+
+  # Custom rules for Jux API
+  jux-error-response-format:
+    description: Error responses should have 'error' field
+    severity: warn
+    given: "$.paths.*.*.responses[?(@property >= '400')].content['application/json'].schema"
+    then:
+      field: properties.error
+      function: truthy
+
+  jux-uuid-format:
+    description: UUIDs should use format uuid
+    severity: warn
+    given: "$.components.schemas.*.properties[?(@.description && @.description.match(/UUID|unique identifier/i))]"
+    then:
+      field: format
+      function: pattern
+      functionOptions:
+        match: "^uuid$"

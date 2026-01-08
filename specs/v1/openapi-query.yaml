@@ -1,0 +1,617 @@
+openapi: 3.0.0
+info:
+  title: Jux Query API
+  version: 1.0.0
+  description: |
+    Test result query API for Jux platform.
+
+    Retrieve test runs, filter results, and access historical data.
+
+    ## Features
+
+    - **List test runs**: Retrieve test runs with filtering and pagination
+    - **Get test run details**: Access individual test run information
+    - **Query test suites**: Retrieve test suites for a test run
+    - **Query test cases**: Access individual test case results
+    - **Historical analysis**: Filter by date ranges, projects, branches
+
+    ## Authentication
+
+    - **Local workstation (jux or jux_team)**: No authentication required
+    - **Team server (jux_team_server)**: Bearer token required for private data
+
+    ## Pagination
+
+    All list endpoints support pagination using `page` and `per_page` parameters.
+    Default page size is 20, maximum is 100.
+
+  contact:
+    name: Jux API Support
+    url: https://github.com/jrjsmrtn/jux
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local workstation
+  - url: https://team-jux.company.com/api/v1
+    description: Team server
+
+paths:
+  /test_runs:
+    get:
+      summary: List test runs
+      description: |
+        Retrieve test runs with filtering and pagination.
+
+        **Filtering**:
+        - Filter by project name
+        - Filter by branch name
+        - Filter by test status (passed, failed, error)
+        - Filter by date range
+        - Filter by tags
+
+        **Sorting**:
+        - Default: Most recent first (by inserted_at DESC)
+        - Can sort by total_tests, failures, success_rate
+
+        **Pagination**:
+        - Default page size: 20
+        - Maximum page size: 100
+        - Returns pagination metadata in response
+
+      operationId: listTestRuns
+      tags:
+        - Test Runs
+
+      parameters:
+        - name: project
+          in: query
+          description: Filter by project name (exact match)
+          schema:
+            type: string
+          example: "my-application"
+
+        - name: branch
+          in: query
+          description: Filter by branch name (exact match)
+          schema:
+            type: string
+          example: "main"
+
+        - name: status
+          in: query
+          description: Filter by test status
+          schema:
+            type: string
+            enum: [passed, failed, error, all]
+            default: all
+          example: "failed"
+
+        - name: date_from
+          in: query
+          description: Filter test runs from this date (ISO 8601 format)
+          schema:
+            type: string
+            format: date-time
+          example: "2024-01-01T00:00:00Z"
+
+        - name: date_to
+          in: query
+          description: Filter test runs until this date (ISO 8601 format)
+          schema:
+            type: string
+            format: date-time
+          example: "2024-12-31T23:59:59Z"
+
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+          example: "smoke-tests,nightly"
+
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          example: 1
+
+        - name: per_page
+          in: query
+          description: Results per page
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          example: 20
+
+        - name: sort_by
+          in: query
+          description: Field to sort by
+          schema:
+            type: string
+            enum: [inserted_at, total_tests, failures, success_rate]
+            default: inserted_at
+          example: "inserted_at"
+
+        - name: sort_order
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+          example: "desc"
+
+      responses:
+        '200':
+          description: Test runs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestRunsResponse'
+              examples:
+                successful_query:
+                  value:
+                    test_runs:
+                      - id: "550e8400-e29b-41d4-a716-446655440000"
+                        project: "my-application"
+                        branch: "main"
+                        commit_sha: "abc123def456"
+                        total_tests: 50
+                        failures: 2
+                        errors: 1
+                        skipped: 0
+                        success_rate: 94.0
+                        inserted_at: "2024-01-15T10:30:00Z"
+                        tags: ["smoke-tests"]
+                      - id: "660e8400-e29b-41d4-a716-446655440001"
+                        project: "my-application"
+                        branch: "feature/new-login"
+                        commit_sha: "def456abc789"
+                        total_tests: 25
+                        failures: 0
+                        errors: 0
+                        skipped: 1
+                        success_rate: 100.0
+                        inserted_at: "2024-01-15T09:15:00Z"
+                        tags: ["feature-tests"]
+                    pagination:
+                      current_page: 1
+                      total_pages: 3
+                      total_count: 52
+                      per_page: 20
+
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /test_runs/{id}:
+    get:
+      summary: Get test run details
+      description: Retrieve detailed information about a specific test run
+      operationId: getTestRun
+      tags:
+        - Test Runs
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Test run UUID
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+      responses:
+        '200':
+          description: Test run details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestRunDetail'
+              examples:
+                test_run_detail:
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440000"
+                    project: "my-application"
+                    branch: "main"
+                    commit_sha: "abc123def456"
+                    total_tests: 50
+                    failures: 2
+                    errors: 1
+                    skipped: 0
+                    success_rate: 94.0
+                    total_time: 12.5
+                    inserted_at: "2024-01-15T10:30:00Z"
+                    tags: ["smoke-tests"]
+                    ci_metadata:
+                      job_id: "12345"
+                      pipeline_url: "https://gitlab.com/my-org/my-app/-/pipelines/67890"
+                      build_number: 142
+                    test_suites:
+                      - id: "770e8400-e29b-41d4-a716-446655440002"
+                        name: "MathTests"
+                        tests: 25
+                        failures: 1
+                        errors: 0
+                        skipped: 0
+                        time: 6.2
+                      - id: "880e8400-e29b-41d4-a716-446655440003"
+                        name: "IntegrationTests"
+                        tests: 25
+                        failures: 1
+                        errors: 1
+                        skipped: 0
+                        time: 6.3
+
+        '404':
+          description: Test run not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /test_runs/{id}/test_suites:
+    get:
+      summary: List test suites for a test run
+      description: Retrieve all test suites associated with a test run
+      operationId: listTestSuites
+      tags:
+        - Test Suites
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Test run UUID
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+      responses:
+        '200':
+          description: Test suites retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestSuitesResponse'
+
+        '404':
+          description: Test run not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /test_suites/{id}/test_cases:
+    get:
+      summary: List test cases for a test suite
+      description: |
+        Retrieve all test cases associated with a test suite.
+
+        **Filtering**:
+        - Filter by status (passed, failed, error, skipped)
+
+      operationId: listTestCases
+      tags:
+        - Test Cases
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Test suite UUID
+          schema:
+            type: string
+            format: uuid
+          example: "770e8400-e29b-41d4-a716-446655440002"
+
+        - name: status
+          in: query
+          description: Filter by test case status
+          schema:
+            type: string
+            enum: [passed, failed, error, skipped, all]
+            default: all
+          example: "failed"
+
+      responses:
+        '200':
+          description: Test cases retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestCasesResponse'
+
+        '404':
+          description: Test suite not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    TestRunsResponse:
+      type: object
+      required:
+        - test_runs
+        - pagination
+      properties:
+        test_runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestRunSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    TestRunSummary:
+      type: object
+      required:
+        - id
+        - project
+        - total_tests
+        - failures
+        - errors
+        - skipped
+        - success_rate
+        - inserted_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the test run
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        project:
+          type: string
+          description: Project name
+          example: "my-application"
+        branch:
+          type: string
+          description: Git branch name
+          example: "main"
+        commit_sha:
+          type: string
+          description: Git commit SHA
+          example: "abc123def456"
+        total_tests:
+          type: integer
+          description: Total number of tests
+          example: 50
+          minimum: 0
+        failures:
+          type: integer
+          description: Number of failed tests
+          example: 2
+          minimum: 0
+        errors:
+          type: integer
+          description: Number of tests with errors
+          example: 1
+          minimum: 0
+        skipped:
+          type: integer
+          description: Number of skipped tests
+          example: 0
+          minimum: 0
+        success_rate:
+          type: number
+          format: float
+          description: Success rate percentage (0-100)
+          example: 94.0
+          minimum: 0
+          maximum: 100
+        inserted_at:
+          type: string
+          format: date-time
+          description: Timestamp when test run was submitted
+          example: "2024-01-15T10:30:00Z"
+        tags:
+          type: array
+          description: Custom tags associated with the test run
+          items:
+            type: string
+          example: ["smoke-tests", "nightly"]
+
+    TestRunDetail:
+      allOf:
+        - $ref: '#/components/schemas/TestRunSummary'
+        - type: object
+          properties:
+            total_time:
+              type: number
+              format: float
+              description: Total execution time in seconds
+              example: 12.5
+            ci_metadata:
+              type: object
+              description: CI/CD metadata if available
+              properties:
+                job_id:
+                  type: string
+                pipeline_url:
+                  type: string
+                  format: uri
+                build_number:
+                  type: integer
+            test_suites:
+              type: array
+              description: Test suites associated with this run
+              items:
+                $ref: '#/components/schemas/TestSuiteSummary'
+
+    TestSuitesResponse:
+      type: object
+      required:
+        - test_suites
+      properties:
+        test_suites:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestSuiteSummary'
+
+    TestSuiteSummary:
+      type: object
+      required:
+        - id
+        - name
+        - tests
+        - failures
+        - errors
+        - skipped
+        - time
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the test suite
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        name:
+          type: string
+          description: Test suite name
+          example: "MathTests"
+        tests:
+          type: integer
+          description: Number of tests in suite
+          example: 25
+          minimum: 0
+        failures:
+          type: integer
+          description: Number of failed tests
+          example: 1
+          minimum: 0
+        errors:
+          type: integer
+          description: Number of tests with errors
+          example: 0
+          minimum: 0
+        skipped:
+          type: integer
+          description: Number of skipped tests
+          example: 0
+          minimum: 0
+        time:
+          type: number
+          format: float
+          description: Total execution time in seconds
+          example: 6.2
+
+    TestCasesResponse:
+      type: object
+      required:
+        - test_cases
+      properties:
+        test_cases:
+          type: array
+          items:
+            $ref: '#/components/schemas/TestCase'
+
+    TestCase:
+      type: object
+      required:
+        - id
+        - name
+        - classname
+        - status
+        - time
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the test case
+          example: "990e8400-e29b-41d4-a716-446655440004"
+        name:
+          type: string
+          description: Test case name
+          example: "test_addition"
+        classname:
+          type: string
+          description: Test case class name
+          example: "MathTest"
+        status:
+          type: string
+          enum: [passed, failed, error, skipped]
+          description: Test case status
+          example: "passed"
+        time:
+          type: number
+          format: float
+          description: Execution time in seconds
+          example: 0.1
+        failure_message:
+          type: string
+          description: Failure message if test failed
+          example: "Expected 5 but got 4"
+        failure_type:
+          type: string
+          description: Failure type if test failed
+          example: "AssertionError"
+        failure_stacktrace:
+          type: string
+          description: Stack trace if test failed
+          example: |
+            Traceback (most recent call last):
+              File "test_math.py", line 15, in test_addition
+                assert result == 5
+            AssertionError: Expected 5 but got 4
+
+    Pagination:
+      type: object
+      required:
+        - current_page
+        - total_pages
+        - total_count
+        - per_page
+      properties:
+        current_page:
+          type: integer
+          description: Current page number (1-indexed)
+          example: 1
+          minimum: 1
+        total_pages:
+          type: integer
+          description: Total number of pages
+          example: 3
+          minimum: 0
+        total_count:
+          type: integer
+          description: Total number of items across all pages
+          example: 52
+          minimum: 0
+        per_page:
+          type: integer
+          description: Number of items per page
+          example: 20
+          minimum: 1
+          maximum: 100
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error type or category
+          example: "Not found"
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+        suggestions:
+          type: array
+          description: Actionable suggestions for resolving the error
+          items:
+            type: string
