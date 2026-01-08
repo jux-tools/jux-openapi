@@ -69,7 +69,7 @@ See `docs/VERSIONING.md` for complete policy.
 
 | Project | Relationship |
 |---------|--------------|
-| `jux/` | Server implementation (NOT YET compliant) |
+| `jux/` | Server implementation (compliant with v1.0.0) |
 | `pytest-jux/` | Client implementation (compliant with v1.0.0) |
 
 ## Development Guidelines

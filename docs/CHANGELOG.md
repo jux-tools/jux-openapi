@@ -21,8 +21,8 @@ See [VERSIONING.md](VERSIONING.md) for complete policy details.
 ## v1.0.0 (2025-01-24) - Initial Stable Release
 
 **Status**: Current stable version
-**Server Implementations**: jux v0.2.0+, jux_team_server v0.2.0+ (future)
-**Client Implementations**: pytest-jux v0.3.0+ (planned)
+**Server Implementations**: jux v0.3.0+, jux_team_server v0.2.0+ (future)
+**Client Implementations**: pytest-jux v0.4.0+
 
 ### Submission API
 
@@ -201,8 +201,8 @@ Host: localhost:4000
 
 | API Version | Server: jux | Server: jux_team_server | Client: pytest-jux | Client: junit-jux | Client: jest-jux |
 |-------------|-------------|-------------------------|-------------------|-------------------|------------------|
-| v1.0.0      | v0.2.0+     | v0.2.0+ (future)        | v0.3.0+ (planned) | Future            | Future           |
-| v1.1.0      | v0.3.0+     | v0.3.0+ (future)        | v0.4.0+ (planned) | Future            | Future           |
+| v1.0.0      | v0.3.0+     | v0.2.0+ (future)        | v0.4.0+           | Future            | Future           |
+| v1.1.0      | v0.4.0+     | v0.3.0+ (future)        | v0.5.0+ (planned) | Future            | Future           |
 
 ---
 
@@ -266,5 +266,5 @@ Third-party client and server implementations are encouraged! To be listed in th
 
 ---
 
-**Last Updated**: 2025-01-24
+**Last Updated**: 2026-01-08
 **Maintainers**: Jux Core Team (@jrjsmrtn)
