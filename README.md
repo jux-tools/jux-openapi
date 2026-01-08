@@ -45,7 +45,7 @@ podman run -p 8080:8080 -e SWAGGER_JSON=/spec/openapi-submission.yaml \
 
 | Project | Type | Status |
 |---------|------|--------|
-| [jux](../jux) | Server (Elixir/Phoenix) | Not yet compliant |
+| [jux](../jux) | Server (Elixir/Phoenix) | Compliant (v0.3.0+) |
 | [pytest-jux](../pytest-jux) | Client (Python) | Compliant (v0.4.0) |
 
 ## Documentation

@@ -119,5 +119,5 @@ What results from the decision.
 
 **Current Version**: 1.0.0
 **API Status**: Stable
-**Server Compliance**: jux NOT YET compliant
+**Server Compliance**: jux v0.3.0+ compliant
 **Client Compliance**: pytest-jux v0.4.0 compliant
