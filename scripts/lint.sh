@@ -1,4 +1,7 @@
 #!/bin/bash
+# SPDX-FileCopyrightText: 2026 Georges Martin <jrjsmrtn@gmail.com>
+# SPDX-License-Identifier: Apache-2.0
+#
 # Lint OpenAPI specifications using Spectral
 #
 # Usage: ./scripts/lint.sh

@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 Georges Martin <jrjsmrtn@gmail.com> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # ADR-0003: Signed Container Package Support
 
 ## Status

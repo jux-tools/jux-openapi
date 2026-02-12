@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 Georges Martin <jrjsmrtn@gmail.com> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # jux-openapi
 
 OpenAPI specifications for the Jux REST API.

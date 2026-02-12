@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 Georges Martin <jrjsmrtn@gmail.com> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # ADR-0002: Initial API Design (v1.0.0)
 
 ## Status
