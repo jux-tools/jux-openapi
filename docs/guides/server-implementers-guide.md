@@ -46,7 +46,7 @@ Return `413 Payload Too Large` with a `Retry-After` header if rate limiting appl
 
 ## Verification Chain
 
-Follow the verification process defined in the [jux-container-format specification](../../../jux-container-format/specs/v1/jxz-format.md):
+Follow the verification process defined in the [jux-container-format specification](https://github.com/jux-tools/jux-container-format/blob/main/specs/v1/jxz-format.md):
 
 ### Step 1: Extract Manifest and Signature
 
@@ -204,6 +204,6 @@ All error responses should follow the standard error format defined in the Jux A
 
 ## References
 
-- [jux-container-format specification](../../../jux-container-format/specs/v1/jxz-format.md)
+- [jux-container-format specification](https://github.com/jux-tools/jux-container-format/blob/main/specs/v1/jxz-format.md)
 - [ADR-0003: Signed Container Package Support](../adr/0003-signed-container-package-support.md)
 - [OWASP: Zip Slip Vulnerability](https://snyk.io/research/zip-slip-vulnerability)
