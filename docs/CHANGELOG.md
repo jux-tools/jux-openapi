@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 Georges Martin <jrjsmrtn@gmail.com> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # Jux API Changelog
 
 This document tracks changes to the Jux API contract independently from application releases. The API version follows [Semantic Versioning](https://semver.org/).
