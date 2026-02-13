@@ -403,6 +403,6 @@ Maintainers of third-party implementations have input on:
 ---
 
 **Maintained by**: Jux Core Team
-**Feedback**: https://github.com/jrjsmrtn/jux-tools/issues
+**Feedback**: https://github.com/jux-tools/jux-tools/issues
 **Version**: 1.0
 **Effective Date**: 2025-01-24

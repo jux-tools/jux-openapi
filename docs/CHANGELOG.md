@@ -260,8 +260,8 @@ Third-party client and server implementations are encouraged! To be listed in th
 
 ## Feedback and Support
 
-- **Issues**: Report API bugs at https://github.com/jrjsmrtn/jux-tools/issues
-- **Discussions**: API design discussions at https://github.com/jrjsmrtn/jux-tools/discussions
+- **Issues**: Report API bugs at https://github.com/jux-tools/jux-tools/issues
+- **Discussions**: API design discussions at https://github.com/jux-tools/jux-tools/discussions
 - **Documentation**: See [docs/guides/](../guides/) for integration guides
 
 ---
