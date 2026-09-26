@@ -59,4 +59,4 @@ podman run -p 8080:8080 -e SWAGGER_JSON=/spec/openapi-submission.yaml \
 
 ## License
 
-MIT
+Apache-2.0

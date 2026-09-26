@@ -55,7 +55,8 @@ podman run -it --rm -p 8080:8080 \
 
 | Version | Status | Description |
 |---------|--------|-------------|
-| v1.0.0 | Current | Initial stable release |
+| v1.0.1 | Current | Licence metadata corrected to Apache-2.0 |
+| v1.0.0 | Superseded | Initial stable release |
 
 ## Versioning Policy
 
@@ -117,7 +118,7 @@ What results from the decision.
 
 ## Status
 
-**Current Version**: 1.0.0
+**Current Version**: 1.0.1
 **API Status**: Stable
 **Server Compliance**: jux v0.3.0+ compliant
 **Client Compliance**: pytest-jux v0.4.0 compliant

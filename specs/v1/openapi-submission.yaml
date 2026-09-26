@@ -4,7 +4,7 @@
 openapi: 3.0.0
 info:
   title: Jux Submission API
-  version: 1.0.0
+  version: 1.0.1
   description: |
     JUnit XML test result submission API for Jux platform.
 
@@ -34,8 +34,8 @@ info:
     name: Jux API Support
     url: https://github.com/jux-tools/jux
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: Apache-2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
   - url: http://localhost:4000/api/v1

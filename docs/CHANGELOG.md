@@ -21,9 +21,24 @@ See [VERSIONING.md](VERSIONING.md) for complete policy details.
 
 ---
 
-## v1.0.0 (2025-01-24) - Initial Stable Release
+## v1.0.1 (2026-09-26) - Licence metadata correction
 
 **Status**: Current stable version
+**Compatibility**: No change to any endpoint, schema or behaviour; clients and servers compliant
+with v1.0.0 are compliant with v1.0.1
+
+### Fixed
+
+- `info.license` in `openapi-submission.yaml` and `openapi-query.yaml` declared MIT. The
+  repository is licensed Apache-2.0 (`LICENSE`, and the SPDX header of every file), so both specs
+  now declare `Apache-2.0` with the Apache licence URL. The README's licence line is corrected
+  to match
+
+---
+
+## v1.0.0 (2025-01-24) - Initial Stable Release
+
+**Status**: Superseded by v1.0.1 (licence metadata only)
 **Server Implementations**: jux v0.3.0+, jux_team_server v0.2.0+ (future)
 **Client Implementations**: pytest-jux v0.4.0+
 
